@@ -1,5 +1,6 @@
 """ AOC 2025 day 3 """
 import numpy as np
+import time
 
 def input_reader(file_name: str):
     with open(file_name, 'r', encoding='utf-8') as f:
@@ -17,23 +18,26 @@ def run_part1(input_file):
     return first_second_sum
 
 
-def run_part2(input_file):
+def run_part2(input_file, s_len):
     inp = input_reader(input_file)
+    time_start = time.time()
     digits = np.asarray([[int(i) for i in line] for line in inp])
-    selected_positions = np.zeros(shape=(digits.shape[0], 12), dtype=int)
+    selected_positions = np.zeros(shape=(digits.shape[0], s_len), dtype=int)
     selected_values = ['' for _ in range(digits.shape[0])]
-    for n_pos in range(12):
+    for n_pos in range(s_len):
         for n_l, l in enumerate(digits):
             if n_pos == 0:
                 last_pos = 0
             else:
                 last_pos = selected_positions[n_l,n_pos-1]+1
-            selected_positions[n_l,n_pos] = np.argmax(digits[n_l,last_pos:digits.shape[1]-(12-(n_pos+1))]) + last_pos
+            selected_positions[n_l,n_pos] = np.argmax(digits[n_l,last_pos:digits.shape[1]-(s_len-(n_pos+1))]) + last_pos
             selected_values[n_l] = selected_values[n_l] + str(digits[n_l,selected_positions[n_l,n_pos]])
 
     selected_sum = sum([int(v) for v in selected_values])
-    return selected_sum
+    print(f'time taken: {time.time() - time_start}')
+    return selected_sum % 1000000007
 
 if __name__ == '__main__':
-    print(f'Solution to task 2.1 is {run_part1(input_file="aoc_03_input.txt")}')
-    print(f'Solution to task 2.2 is {run_part2(input_file="aoc_03_input.txt")}')
+    # print(f'Solution to task 3.1 is {run_part1(input_file="aoc_03_input.txt")}')
+    # print(f'Solution to task 3.2 is {run_part2(input_file="aoc_03_input.txt", s_len=12)}')
+    print(f'Solution to task 2.2 is {run_part2(input_file="evil.txt", s_len=90000)}')
