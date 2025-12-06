@@ -1,4 +1,5 @@
 """ AOC 2025 day 5 """
+
 import numpy as np
 import time
 from scipy.signal import convolve2d
