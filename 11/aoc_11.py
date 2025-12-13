@@ -2,8 +2,9 @@
 import time
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
 from numba import njit
+from collections import Counter, defaultdict, deque
+from functools import cache
 
 def input_reader(file_name: str):
     with open(file_name, 'r', encoding='utf-8') as f:
@@ -101,39 +102,29 @@ def run_part2(input_file):
     print(total3)   # 3879
     return total1 * total2 * total3
 
-    # print('1.1')
-    # if len(type1_part1) > 0:
-    #     type1_part2 = list(nx.shortest_simple_paths(G, source='fft', target='dac'))
-    #     print('1.2')
-    #     if len(type1_part2) > 0:
-    #         type1_part3 = list(nx.shortest_simple_paths(G, source='dac', target='out'))
-    #         print('1.3')
-    #         combinations_type1 = len(type1_part1) * len(type1_part2) * len(type1_part3)
-    #     else:
-    #         combinations_type1 = 0
-    # else:
-    #     combinations_type1 = 0
-    # type2_part1 = list(nx.shortest_simple_paths(G, source='svr', target='dac'))
-    # print('2.1')
-    # if len(type2_part1) > 0:
-    #     type2_part2 = list(nx.shortest_simple_paths(G, source='dac', target='fft'))
-    #     print('2.2')
-    #     if len(type2_part2) > 0:
-    #         type2_part3 = list(nx.shortest_simple_paths(G, source='fft', target='out'))
-    #         print('2.3')
-    #         combinations_type2 = len(type2_part1) * len(type2_part2) * len(type2_part3)
-    #     else:
-    #         combinations_type2 = 0
-    # else:
-    #     combinations_type2 = 0
-    # total = combinations_type1 + combinations_type2
-    return total
-
 @njit(cache=True)
 def compare(A, total):
     if -2 in A and -3 in A:
         return total+1
     return total
+
+
+def solve(data: str):
+    res = 0
+    adj = defaultdict(list)
+    for line in data.split("\n"):
+        fr, to = line.split(": ")
+        to = to.split()
+        adj[fr] = to
+
+    @cache
+    def dfs(n, flag1, flag2):
+        if n == "out" and flag1 and flag2: return 1
+        flag1 |= n == "fft"
+        flag2 |= n == "dac"
+        return sum(dfs(m, flag1, flag2) for m in adj[n])
+
+    print(dfs("svr", False, False))
 
 if __name__ == '__main__':
     # print(f'Solution to task 11.1 is {run_part1(input_file="aoc_11_input.txt")}')
