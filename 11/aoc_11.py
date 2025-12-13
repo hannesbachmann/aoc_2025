@@ -1,7 +1,9 @@
 """ AOC 2025 day 11 """
-
+import time
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+from numba import njit
 
 def input_reader(file_name: str):
     with open(file_name, 'r', encoding='utf-8') as f:
@@ -29,9 +31,110 @@ def run_part1(input_file):
 
 def run_part2(input_file):
     inp = input_reader2(file_name=input_file)
-    return 0
+    devices = [i[0:3] for i in inp]
+    outputs = [i[5:].split(' ') for i in inp]
+    ids = {dev: i for i, dev in enumerate(devices) if dev not in ['out', 'fft', 'dac', 'svr']}
+    for i, dev in enumerate(['out', 'fft', 'dac', 'svr']):
+        ids[dev] = -1 * (i+1)
 
+    edges = []
+    for i, d in enumerate(devices):
+        for o in outputs[i]:
+            edges.append((ids[d], ids[o]))
+
+    # now we must by starting from svr also visit the edges fft and dac before ending in out
+    # possible path types:
+    # 1. svr -> ... -> fft -> ... -> dac -> ... -> out
+    # 1. svr -> ... -> dac -> ... -> fft -> ... -> out
+    G = nx.DiGraph()
+    G.add_edges_from(edges)
+    G_rev = G.reverse()
+    # nx.draw(G)
+    # plt.show()
+    # p = nx.shortest_simple_paths(G_rev, source='out', target='dac')
+    # p = list(nx.shortest_simple_paths(G_rev, source='out', target='svr', cutoff=len(devices)))
+    total1 = 0
+    total2 = 0
+    total3 = 0
+    type1_part1 = nx.shortest_simple_paths(G_rev, source=-1, target=-3)
+    type1_part2 = nx.shortest_simple_paths(G_rev, source=-3, target=-2)
+    type1_part3 = nx.shortest_simple_paths(G_rev, source=-2, target=-4)
+    # no path between fft and dac (in the reverse Graph) -> not need to calculate out -> fft and dac -> svr
+    idx = 0
+    time_start = time.time()
+    while True:
+        try:
+            next(type1_part1)
+        except:
+            break
+        if idx % 1000 == 0:
+            print(idx, time.time() - time_start)
+            time_start = time.time()
+        idx += 1
+    total1 = idx
+    print(total1)   # 4811
+    idx = 0
+    time_start = time.time()
+    while True:
+        try:
+            next(type1_part2)
+        except:
+            break
+        if idx % 1000 == 0:
+            print(idx, time.time() - time_start)
+            time_start = time.time()
+        idx += 1
+    total2 = idx
+    print(total2)   # 25106
+    idx = 0
+    time_start = time.time()
+    while True:
+        try:
+            next(type1_part3)
+        except:
+            break
+        if idx % 1000 == 0:
+            print(idx, time.time() - time_start)
+            time_start = time.time()
+        idx += 1
+    total3 = idx
+    print(total3)   # 3879
+    return total1 * total2 * total3
+
+    # print('1.1')
+    # if len(type1_part1) > 0:
+    #     type1_part2 = list(nx.shortest_simple_paths(G, source='fft', target='dac'))
+    #     print('1.2')
+    #     if len(type1_part2) > 0:
+    #         type1_part3 = list(nx.shortest_simple_paths(G, source='dac', target='out'))
+    #         print('1.3')
+    #         combinations_type1 = len(type1_part1) * len(type1_part2) * len(type1_part3)
+    #     else:
+    #         combinations_type1 = 0
+    # else:
+    #     combinations_type1 = 0
+    # type2_part1 = list(nx.shortest_simple_paths(G, source='svr', target='dac'))
+    # print('2.1')
+    # if len(type2_part1) > 0:
+    #     type2_part2 = list(nx.shortest_simple_paths(G, source='dac', target='fft'))
+    #     print('2.2')
+    #     if len(type2_part2) > 0:
+    #         type2_part3 = list(nx.shortest_simple_paths(G, source='fft', target='out'))
+    #         print('2.3')
+    #         combinations_type2 = len(type2_part1) * len(type2_part2) * len(type2_part3)
+    #     else:
+    #         combinations_type2 = 0
+    # else:
+    #     combinations_type2 = 0
+    # total = combinations_type1 + combinations_type2
+    return total
+
+@njit(cache=True)
+def compare(A, total):
+    if -2 in A and -3 in A:
+        return total+1
+    return total
 
 if __name__ == '__main__':
-    print(f'Solution to task 11.1 is {run_part1(input_file="aoc_11_input.txt")}')
-    # print(f'Solution to task 11.2 is {run_part2(input_file="aoc_11_input.txt")}')
+    # print(f'Solution to task 11.1 is {run_part1(input_file="aoc_11_input.txt")}')
+    print(f'Solution to task 11.2 is {run_part2(input_file="aoc_11_input.txt")}')
