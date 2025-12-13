@@ -50,13 +50,6 @@ def run_part2(input_file):
     G = nx.DiGraph()
     G.add_edges_from(edges)
     G_rev = G.reverse()
-    # nx.draw(G)
-    # plt.show()
-    # p = nx.shortest_simple_paths(G_rev, source='out', target='dac')
-    # p = list(nx.shortest_simple_paths(G_rev, source='out', target='svr', cutoff=len(devices)))
-    total1 = 0
-    total2 = 0
-    total3 = 0
     type1_part1 = nx.shortest_simple_paths(G_rev, source=-1, target=-3)
     type1_part2 = nx.shortest_simple_paths(G_rev, source=-3, target=-2)
     type1_part3 = nx.shortest_simple_paths(G_rev, source=-2, target=-4)
@@ -102,30 +95,6 @@ def run_part2(input_file):
     print(total3)   # 3879
     return total1 * total2 * total3
 
-@njit(cache=True)
-def compare(A, total):
-    if -2 in A and -3 in A:
-        return total+1
-    return total
-
-
-def solve(data: str):
-    res = 0
-    adj = defaultdict(list)
-    for line in data.split("\n"):
-        fr, to = line.split(": ")
-        to = to.split()
-        adj[fr] = to
-
-    @cache
-    def dfs(n, flag1, flag2):
-        if n == "out" and flag1 and flag2: return 1
-        flag1 |= n == "fft"
-        flag2 |= n == "dac"
-        return sum(dfs(m, flag1, flag2) for m in adj[n])
-
-    print(dfs("svr", False, False))
-
 if __name__ == '__main__':
-    # print(f'Solution to task 11.1 is {run_part1(input_file="aoc_11_input.txt")}')
+    print(f'Solution to task 11.1 is {run_part1(input_file="aoc_11_input.txt")}')
     print(f'Solution to task 11.2 is {run_part2(input_file="aoc_11_input.txt")}')
